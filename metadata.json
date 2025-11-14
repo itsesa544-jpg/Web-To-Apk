@@ -1,0 +1,9 @@
+{
+  "name": "Web to apk",
+  "description": "A web application to convert websites into APK files.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

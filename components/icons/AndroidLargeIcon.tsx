@@ -1,0 +1,9 @@
+import React from 'react';
+
+export const AndroidLargeIcon: React.FC = () => (
+    <div className="w-16 h-16 bg-indigo-600 rounded-lg flex items-center justify-center text-white p-3 flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M17.3,13.39a1,1,0,0,1,1,1,1,1,0,0,1-1,1,1,1,0,0,1-1-1,1,1,0,0,1,1-1m-10.6,0a1,1,0,0,1,1,1,1,1,0,0,1-1,1,1,1,0,0,1-1-1,1,1,0,0,1,1-1m11.9-5.22s0-.07,0-.1a6.6,6.6,0,0,0-13.2,0s0,.07,0,.1a8.14,8.14,0,0,0,1,3.83L5.1,13.29a1,1,0,0,0-.2,1.4,1,1,0,0,0,1.4.2L7.6,14a7.14,7.14,0,0,0,8.8,0l1.3,1a1,1,0,0,0,1.4-.2,1,1,0,0,0-.2-1.4l-1.3-1A8.14,8.14,0,0,0,18.6,8.17ZM8.1,5.27a1,1,0,1,1,1-1,1,1,0,0,1-1,1Zm7.8,0a1,1,0,1,1,1-1,1,1,0,0,1-1,1Z" />
+        </svg>
+    </div>
+);
