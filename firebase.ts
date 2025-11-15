@@ -1,5 +1,15 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, type UserCredential } from 'firebase/auth';
+import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    onAuthStateChanged, 
+    signOut, 
+    type UserCredential,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -26,6 +36,20 @@ export const signInWithGoogle = async () => {
     const token = credential?.accessToken;
     return { user: result.user, token };
 };
+
+export const signUpWithEmail = async (email, password) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // When signing up with email, firebase user object doesn't have displayName.
+    // Let's set it to the part of the email before the @ sign for a better UX.
+    const displayName = email.split('@')[0];
+    await updateProfile(userCredential.user, { displayName });
+    return userCredential;
+};
+
+export const signInWithEmail = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
+};
+
 
 export const logout = () => {
     return signOut(auth);
