@@ -7,9 +7,10 @@ import { ChatIcon } from './icons/ChatIcon';
 import { LogoutIcon } from './icons/LogoutIcon';
 import { View, AppData } from '../App';
 import { BuildDownloadIcon } from './icons/BuildDownloadIcon';
+import { useAuth } from '../AuthContext';
+import { logout } from '../firebase';
 
 
-// Fix: Add a default empty function to the onClick prop to make it optional.
 const NavItem = ({ icon, label, active = false, special = false, onClick = () => {} }) => (
   <li>
     <button
@@ -35,10 +36,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onNavigate }) => {
+  const { currentUser } = useAuth();
+  
   return (
     <aside className="bg-white w-24 flex flex-col items-center py-8 shadow-lg z-10">
         <div className="w-10 h-10 mb-12">
-            <a href="#" aria-label="App Logo"><LogoIcon /></a>
+            <a href="#" aria-label="App Logo" onClick={(e) => { e.preventDefault(); onNavigate('dashboard');}}><LogoIcon /></a>
         </div>
         <nav className="flex-grow">
             <ul className="space-y-6">
@@ -48,9 +51,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onNavigate }) => {
                 <NavItem icon={<SettingsIcon />} label="Settings" active={activeView === 'settings'} onClick={() => onNavigate('settings')} />
             </ul>
         </nav>
-        <div className="space-y-6">
+        <div className="space-y-6 flex flex-col items-center">
+             {currentUser && (
+                  <img
+                    src={currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'U')}&background=random&color=fff`}
+                    alt="User Avatar"
+                    className="w-14 h-14 rounded-full border-2 border-slate-200"
+                    title={currentUser.displayName || 'User'}
+                  />
+                )}
             <NavItem icon={<ChatIcon />} label="Support Chat" />
-            <NavItem icon={<LogoutIcon />} label="Logout" special />
+            <NavItem icon={<LogoutIcon />} label="Logout" special onClick={logout} />
         </div>
     </aside>
   );

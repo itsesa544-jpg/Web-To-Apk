@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { RecaptchaIcon } from './icons/RecaptchaIcon';
 import { AndroidLargeIcon } from './icons/AndroidLargeIcon';
+import { GoogleDriveIcon } from './icons/GoogleDriveIcon';
 import { QrCodePlaceholder } from './icons/QrCodePlaceholder';
 import { AppData } from '../App';
+import { useAuth } from '../AuthContext';
 
 // A base64 representation of a tiny, valid zip file. APKs are zip-based, so this serves as a realistic binary placeholder.
 const DUMMY_APK_BASE64 = 'UEsDBAoAAAAAAACk31ZTAAAAAAAAAAAAAAAABgANTUVUQS1JTkYvAwBQSwcIAAAAAACAAAAAAAAAAFBLAwQKAAAAAAAAlN9WUwAAAAAAAAAAAAAAAA8ADU1FVEEtSU5GL01BTklGRVNULk1GUEsHCAAAAAACAAAAAAAAAFBLAQIUAAoAAAAAAACk31ZTAAAAAAAAAAAAAAAABgAAAAAAAAABACAAAAAAAAAATUVUQS1JTkYvCgAAAAAAAACU31ZTAAAAAAAAAAAAAAAADwAAAAAAAAABACAAAACCAAAAAE1FVEEtSU5GL01BTklGRVNULk1GUEsFBgAAAAACAAIAfgAAAAIAAAAAAA==';
@@ -80,7 +82,11 @@ const BuildForm = ({ app, onBuild, versionCode, setVersionCode, versionName, set
 
 
 const BuildDownloadPage = ({ app, releaseNotes, versionName }: { app: AppData, releaseNotes: string, versionName: string }) => {
+    const { googleAccessToken } = useAuth();
     const [isDownloadingApk, setIsDownloadingApk] = useState(false);
+    const [isSavingToDrive, setIsSavingToDrive] = useState(false);
+    const [driveButtonText, setDriveButtonText] = useState('Save');
+
 
     const handleDownloadApk = () => {
         if (isDownloadingApk) return;
@@ -106,6 +112,52 @@ const BuildDownloadPage = ({ app, releaseNotes, versionName }: { app: AppData, r
             setIsDownloadingApk(false);
         }, 1500); // 1.5 second delay
     };
+
+    const handleSaveToDrive = async () => {
+        if (!googleAccessToken || isSavingToDrive) return;
+        setIsSavingToDrive(true);
+        setDriveButtonText('Saving...');
+        
+        const sanitizedAppName = app.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const fileName = `${sanitizedAppName}_v${versionName || '1.0'}.apk`;
+        const apkBlob = base64ToBlob(DUMMY_APK_BASE64, 'application/vnd.android.package-archive');
+
+        try {
+            const metadata = {
+                name: fileName,
+                mimeType: 'application/vnd.android.package-archive',
+            };
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', apkBlob);
+
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: new Headers({ 'Authorization': 'Bearer ' + googleAccessToken }),
+                body: form,
+            });
+
+            if (response.ok) {
+                setDriveButtonText('Saved!');
+            } else {
+                const error = await response.json();
+                console.error('Error saving to Google Drive:', error);
+                setDriveButtonText('Failed');
+                alert('Failed to save to Google Drive. Your session might have expired. Please try signing in again.');
+            }
+        } catch (error) {
+            console.error('Error during Drive upload:', error);
+            setDriveButtonText('Failed');
+            alert('An error occurred while saving to Google Drive.');
+        } finally {
+            setTimeout(() => {
+                setIsSavingToDrive(false);
+                setDriveButtonText('Save');
+            }, 3000);
+        }
+    };
+
 
     return (
         <div className="w-full max-w-lg mx-auto">
@@ -150,6 +202,23 @@ const BuildDownloadPage = ({ app, releaseNotes, versionName }: { app: AppData, r
                 </button>
             </div>
             
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <GoogleDriveIcon />
+                    <div>
+                        <h3 className="font-bold text-slate-800">Save APK to Drive</h3>
+                        <p className="text-sm text-slate-500">Save the APK to your Google Drive.</p>
+                    </div>
+                </div>
+                <button
+                    onClick={handleSaveToDrive}
+                    disabled={!googleAccessToken || isSavingToDrive}
+                    className="w-32 h-11 flex justify-center items-center py-2 px-5 border border-transparent rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed"
+                >
+                    {driveButtonText}
+                </button>
+            </div>
+
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <AndroidLargeIcon />

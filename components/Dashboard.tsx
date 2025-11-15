@@ -7,7 +7,7 @@ import { View, AppData } from '../App';
 interface DashboardProps {
   apps: AppData[];
   onNavigate: (view: View, app?: AppData) => void;
-  onDeleteApp: (appId: number) => void;
+  onDeleteApp: (appId: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ apps, onNavigate, onDeleteApp }) => {

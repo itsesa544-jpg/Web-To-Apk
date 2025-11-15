@@ -7,7 +7,7 @@ import { View, AppData } from '../App';
 interface AppCardProps {
   app: AppData;
   onNavigate: (view: View, app: AppData) => void;
-  onDeleteApp: (appId: number) => void;
+  onDeleteApp: (appId: string) => void;
 }
 
 const DeleteConfirmationModal = ({ appName, onConfirm, onCancel }) => (
